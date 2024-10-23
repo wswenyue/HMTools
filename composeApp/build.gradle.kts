@@ -41,7 +41,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "鸿蒙工具包"
+            packageName = "HarmonyOSTools"
             packageVersion = "1.0.0"
             println("==>" + project.layout.projectDirectory.dir("resources"))
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
