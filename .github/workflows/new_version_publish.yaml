@@ -70,6 +70,7 @@ jobs:
           for f in * ; do mv -- "$f" "$(echo $f | sed -nE 's/^(.*)(\..*)$/\1-apple\2/p')" ; done
       - name: "Print out dmg"
         run: ls -alh ./composeApp/build/compose/binaries/main-release/dmg/
+        shell: bash
       - name: "Upload .dmg"
         uses: actions/upload-artifact@v4
         with:
@@ -139,6 +140,7 @@ jobs:
           for f in * ; do mv -- "$f" "$(echo $f | sed -nE 's/^(.*)(\..*)$/\1-intel\2/p')" ; done
       - name: "Print out dmg"
         run: ls -alh ./composeApp/build/compose/binaries/main-release/dmg/
+        shell: bash
       - name: 'Upload .dmg'
         uses: actions/upload-artifact@v4
         with:
@@ -174,6 +176,7 @@ jobs:
         run: ./gradlew :composeApp:packageReleaseMsi
       - name: "Print out msi"
         run: ls -alh ./composeApp/build/compose/binaries/main-release/msi/
+        shell: bash
       - name: 'Upload .msi'
         uses: actions/upload-artifact@v4
         with:
