@@ -50,7 +50,7 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
       - name: "Build"
         #        run: ./gradlew :composeApp:packageDmg :composeApp:notarizeDmg
-        run: ./gradlew :composeApp:packageDmg
+        run: ./gradlew :composeApp:packageReleaseDmg
       - name: "Upload logs"
         uses: actions/upload-artifact@v4
         if: always()
@@ -62,17 +62,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: binaries-mac-silicon
-          path: composeApp/build/compose/binaries/main/**
+          path: composeApp/build/compose/binaries/main-release/**
           retention-days: 1
       - name: "Add a suffix to the artifacts"
         run: |
-          cd composeApp/build/compose/binaries/main/dmg
+          cd composeApp/build/compose/binaries/main-release/dmg
           for f in * ; do mv -- "$f" "$(echo $f | sed -nE 's/^(.*)(\..*)$/\1-apple\2/p')" ; done
       - name: "Upload .dmg"
         uses: actions/upload-artifact@v4
         with:
           name: app-mac-silicon
-          path: composeApp/build/compose/binaries/main/dmg/*.dmg
+          path: composeApp/build/compose/binaries/main-release/dmg/*.dmg
           retention-days: 1
   build-macos-intel-app:
     runs-on: macos-12
@@ -117,7 +117,7 @@ jobs:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
       - name: "Build"
         #        run: ./gradlew :composeApp:packageDmg :composeApp:notarizeDmg
-        run: ./gradlew :composeApp:packageDmg
+        run: ./gradlew :composeApp:packageReleaseDmg
       - name: 'Upload logs'
         uses: actions/upload-artifact@v4
         if: always()
@@ -129,17 +129,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: binaries-mac-intel
-          path: composeApp/build/compose/binaries/main/**
+          path: composeApp/build/compose/binaries/main-release/**
           retention-days: 1
       - name: "Add a suffix to the artifacts"
         run: |
-          cd composeApp/build/compose/binaries/main/dmg
+          cd composeApp/build/compose/binaries/main-release/dmg
           for f in * ; do mv -- "$f" "$(echo $f | sed -nE 's/^(.*)(\..*)$/\1-intel\2/p')" ; done
       - name: 'Upload .dmg'
         uses: actions/upload-artifact@v4
         with:
           name: app-mac-intel
-          path: composeApp/build/compose/binaries/main/dmg/*.dmg
+          path: composeApp/build/compose/binaries/main-release/dmg/*.dmg
           retention-days: 1
   build-windows-app:
     runs-on: windows-latest
@@ -167,12 +167,12 @@ jobs:
         env:
           JAVA_HOME: ${{ steps.setup-java.outputs.path }}
       - name: "Build"
-        run: ./gradlew :composeApp:packageMsi
+        run: ./gradlew :composeApp:packageReleaseMsi
       - name: 'Upload .msi'
         uses: actions/upload-artifact@v4
         with:
           name: app-windows
-          path: composeApp/build/compose/binaries/main/msi/*.msi
+          path: composeApp/build/compose/binaries/main-release/msi/*.msi
           retention-days: 1
   dist:
     runs-on: ubuntu-latest
