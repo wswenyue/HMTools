@@ -176,6 +176,10 @@ jobs:
           retention-days: 1
   dist:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write   # 'write' access to pull requests
+      contents: write # We generate static HTML, JS, CSS so we need write access to the repo
+      deployments: write
     needs:
       - build-macos-silicon-app
       - build-macos-intel-app
