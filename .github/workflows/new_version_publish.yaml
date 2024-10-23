@@ -1,0 +1,176 @@
+name: "🎉 Release tag -> GitHub release"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-macos-silicon-app:
+    runs-on: macos-14
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+      - name: "Set up JDK 17"
+        id: setup-java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "liberica"
+          java-version: "17"
+          architecture: arm64
+#      - name: "Decode signing certificate"
+#        run: |
+#          echo ${{ secrets.CERT_B64 }} | base64 -d | zcat > composeApp/macos-dev.cer
+#      - name: "Import signing certificate"
+#        uses: apple-actions/import-codesign-certs@v3
+#        with:
+#          p12-filepath: composeApp/macos-dev.cer
+#          p12-password: ${{ secrets.CERT_PASSWD }}
+#      - name: "Setup build env"
+#        run: |
+#          python .github/setup_gradle_properties_release.py tag=${{ github.ref_name }}
+#      - name: "Setup signing config"
+#        run: |
+#          echo "" >> gradle.properties
+#          echo "cert_identity=${{ secrets.CERT_IDENTITY }}" >> gradle.properties
+#      - name: "Setup notarization config"
+#        run: |
+#          echo "" >> gradle.properties
+#          echo "notarization_apple_id=${{ secrets.NOTARIZATION_APPLE_ID }}" >> gradle.properties
+#          echo "notarization_password=${{ secrets.NOTARIZATION_PASSWD }}" >> gradle.properties
+#          echo "notarization_asc_provider=${{ secrets.NOTARIZATION_ASC_PROVIDER }}" >> gradle.properties
+      - name: "Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
+      - name: "Build"
+#        run: ./gradlew :composeApp:packageDmg :composeApp:notarizeDmg
+        run: ./gradlew :composeApp:packageDmg
+      - name: "Upload logs"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logs-mac-silicon
+          path: composeApp/build/compose/logs/**/*.txt
+          retention-days: 30
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-mac-silicon
+          path: composeApp/build/compose/binaries/main/**
+          retention-days: 1
+      - name: "Add a suffix to the artifacts"
+        run: |
+          cd composeApp/build/compose/binaries/main/dmg
+          for f in * ; do mv -- "$f" "$(echo $f | sed -nE 's/^(.*)(\..*)$/\1-apple\2/p')" ; done
+      - name: "Upload .dmg"
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-mac-silicon
+          path: composeApp/build/compose/binaries/main/dmg/*.dmg
+          retention-days: 1
+  build-macos-intel-app:
+    runs-on: macos-12
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+      - name: "Set up JDK 17"
+        id: setup-java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+#      - name: "Decode signing certificate"
+#        run: |
+#          echo ${{ secrets.CERT_B64 }} | base64 -d | zcat > composeApp/macos-dev.cer
+#      - name: "Import signing certificate"
+#        uses: apple-actions/import-codesign-certs@v3
+#        with:
+#          p12-filepath: composeApp/macos-dev.cer
+#          p12-password: ${{ secrets.CERT_PASSWD }}
+#      - name: "Setup build env"
+#        run: |
+#          python .github/setup_gradle_properties_release.py tag=${{ github.ref_name }}
+#      - name: "Setup signing config"
+#        run: |
+#          echo "" >> gradle.properties
+#          echo "cert_identity=${{ secrets.CERT_IDENTITY }}" >> gradle.properties
+#      - name: "Setup notarization config"
+#        run: |
+#          echo "" >> gradle.properties
+#          echo "notarization_apple_id=${{ secrets.NOTARIZATION_APPLE_ID }}" >> gradle.properties
+#          echo "notarization_password=${{ secrets.NOTARIZATION_PASSWD }}" >> gradle.properties
+#          echo "notarization_asc_provider=${{ secrets.NOTARIZATION_ASC_PROVIDER }}" >> gradle.properties
+      - name: "Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
+      - name: "Build"
+#        run: ./gradlew :composeApp:packageDmg :composeApp:notarizeDmg
+        run: ./gradlew :composeApp:packageDmg
+      - name: 'Upload logs'
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logs-mac-intel
+          path: composeApp/build/compose/logs/**/*.txt
+          retention-days: 30
+      - name: 'Upload binaries'
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-mac-intel
+          path: composeApp/build/compose/binaries/main/**
+          retention-days: 1
+      - name: "Add a suffix to the artifacts"
+        run: |
+          cd composeApp/build/compose/binaries/main/dmg
+          for f in * ; do mv -- "$f" "$(echo $f | sed -nE 's/^(.*)(\..*)$/\1-intel\2/p')" ; done
+      - name: 'Upload .dmg'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-mac-intel
+          path: composeApp/build/compose/binaries/main/dmg/*.dmg
+          retention-days: 1
+  build-windows-app:
+    runs-on: windows-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+      - name: "Set up JDK 17"
+        id: setup-java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: |
+            11
+            17
+#      - name: "Setup build env"
+#        run: |
+#          python .github/setup_gradle_properties_release.py tag=${{ github.ref_name }}
+      - name: "Setup Gradle"
+        uses: gradle/actions/setup-gradle@v4
+        env:
+          JAVA_HOME: ${{ steps.setup-java.outputs.path }}
+      - name: "Build"
+        run: ./gradlew :composeApp:packageMsi
+      - name: 'Upload .msi'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-windows
+          path: composeApp/build/compose/binaries/main/msi/*.msi
+          retention-days: 1
